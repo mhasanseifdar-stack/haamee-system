@@ -1,74 +1,20 @@
-# 🚀 سامانه Haamee - آماده تحویل
+ Haamee
 
-## ⚡ شروع سریع (5 دقیقه)
 
-### 1️⃣ نصب Backend
-
-```bash
-cd haamee-backend
-npm install
-npm start
-```
-
-### 2️⃣ نصب Frontend (ترمینال جدید)
-
-```bash
-cd haamee-frontend
-npm install
-npm start
-```
-
-### 3️⃣ ورود
-
-مرورگر خودکار باز می‌شود: http://localhost:3000
-
-- **نام کاربری:** admin
-- **رمز عبور:** 123456
-
----
-
-## 📦 فایل‌های پروژه
+ فایل‌های پروژه
 
 ```
-✅ haamee-backend/
-   ├── server.js (سرور کامل با API)
+ haamee-backend/
+   ├── server.js 
    ├── package.json
-   └── haamee.db (خودکار ساخته می‌شود)
+   └── haamee.db 
 
-✅ haamee-frontend/
-   ├── src/App.js (React App کامل)
+ haamee-frontend/
+   ├── src/App.js 
    └── package.json
 
-✅ DEPLOY_GUIDE.md (راهنمای استقرار آنلاین)
-```
+ DEPLOY_GUIDE.md 
 
----
-
-## 🌐 استقرار آنلاین
-
-برای قرار دادن روی اینترنت، فایل `DEPLOY_GUIDE.md` رو بخونید.
-
-**سریع‌ترین روش:** Railway.app (رایگان و خودکار)
-
-1. برید به https://railway.app
-2. لاگین با GitHub
-3. Deploy کنید
-4. URL دریافت کنید
-
----
-
-## ✅ ویژگی‌های سیستم
-
-- ✅ مدیریت اشخاص
-- ✅ مدیریت سازمان‌ها  
-- ✅ مدیریت رویدادها
-- ✅ مدیریت درخواست‌ها
-- ✅ مدیریت پرداخت‌ها
-- ✅ داشبورد و گزارش‌ها
-- ✅ جستجو و فیلتر پیشرفته
-- ✅ ذخیره دائمی داده‌ها
-- ✅ چند کاربره (3+ نفر همزمان)
-- ✅ رابط کاربری فارسی و حرفه‌ای
 
 ---
 
