@@ -1,0 +1,1215 @@
+import React, { useEffect, useState } from 'react';
+import {
+  AlertCircle,
+  BarChart3,
+  Building2,
+  Calendar,
+  CheckCircle,
+  ChevronLeft,
+  DollarSign,
+  Edit,
+  FileText,
+  Home,
+  LogOut,
+  Plus,
+  Save,
+  Search,
+  Trash2,
+  Users,
+  X,
+  Filter
+} from 'lucide-react';
+
+// API Configuration
+const API_URL = 'http://localhost:3001/api';
+
+const HaameeFinal = () => {
+  const [currentScreen, setCurrentScreen] = useState('login');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
+
+  const [persons, setPersons] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [applications, setApplications] = useState([]);
+  const [payments, setPayments] = useState([]);
+
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [selectedOrg, setSelectedOrg] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+
+  const [searchText, setSearchText] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  // API Helper
+  const api = {
+    get: async (endpoint) => {
+      const response = await fetch(`${API_URL}${endpoint}`);
+      if (!response.ok) throw new Error('Network error');
+      return response.json();
+    },
+    post: async (endpoint, data) => {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Network error');
+      return response.json();
+    },
+    put: async (endpoint, data) => {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Network error');
+      return response.json();
+    },
+    delete: async (endpoint) => {
+      const response = await fetch(`${API_URL}${endpoint}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Network error');
+      return response.json();
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) loadAllData();
+  }, [currentUser]);
+
+  const loadAllData = async () => {
+    try {
+      const [p, o, e, a, pay] = await Promise.all([
+        api.get('/persons'),
+        api.get('/organizations'),
+        api.get('/events'),
+        api.get('/applications'),
+        api.get('/payments')
+      ]);
+      setPersons(p);
+      setOrganizations(o);
+      setEvents(e);
+      setApplications(a);
+      setPayments(pay);
+    } catch (error) {
+      console.error('Load error:', error);
+      notify('خطا در بارگذاری داده‌ها', 'error');
+    }
+  };
+
+  const notify = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const Notif = () => {
+    if (!notification) return null;
+    const ok = notification.type === 'success';
+    return (
+      <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 ${ok ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+        {ok ? <CheckCircle size={24} /> : <AlertCircle size={24} />}
+        <span className="font-semibold">{notification.message}</span>
+      </div>
+    );
+  };
+
+  // ==================== LOGIN ====================
+  const Login = () => {
+    const [user, setUser] = useState('');
+    const [pass, setPass] = useState('');
+
+    const doLogin = () => {
+      if (user === 'admin' && pass === '123456') {
+        setCurrentUser({ username: 'مدیر سیستم' });
+        setCurrentScreen('dashboard');
+        notify('خوش آمدید!');
+      } else {
+        notify('نام کاربری یا رمز اشتباه است', 'error');
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 flex items-center justify-center p-4">
+        <Notif />
+        <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Calendar className="text-white" size={48} />
+            </div>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">سامانه Haamee</h1>
+            <p className="text-gray-600">مدیریت رویدادها و درخواست‌ها</p>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-right text-gray-700 mb-2 font-semibold">نام کاربری</label>
+              <input type="text" value={user} onChange={(e) => setUser(e.target.value)} className="w-full px-4 py-3 border-2 rounded-xl focus:border-blue-500 focus:outline-none text-right" placeholder="admin" />
+            </div>
+            <div>
+              <label className="block text-right text-gray-700 mb-2 font-semibold">رمز عبور</label>
+              <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && doLogin()} className="w-full px-4 py-3 border-2 rounded-xl focus:border-blue-500 focus:outline-none text-right" placeholder="123456" />
+            </div>
+            <button onClick={doLogin} className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-xl font-bold shadow-lg">
+              ورود به سامانه
+            </button>
+            <div className="text-center text-sm text-gray-500 mt-4 bg-gray-50 p-3 rounded-lg">
+              <p className="font-semibold mb-1">اطلاعات ورود:</p>
+              <p>admin / 123456</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== DASHBOARD ====================
+  const Dashboard = () => {
+    const stats = {
+      persons: persons.length,
+      orgs: organizations.length,
+      events: events.length,
+      apps: applications.length,
+      pending: applications.filter((a) => a.status === 'در انتظار').length,
+      payments: payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+    };
+
+    const tiles = [
+      { icon: Users, title: 'اشخاص', color: 'from-blue-500 to-blue-600', screen: 'persons', count: stats.persons },
+      { icon: Building2, title: 'سازمان‌ها', color: 'from-purple-500 to-purple-600', screen: 'organizations', count: stats.orgs },
+      { icon: Calendar, title: 'رویدادها', color: 'from-green-500 to-green-600', screen: 'events', count: stats.events },
+      { icon: FileText, title: 'درخواست‌ها', color: 'from-orange-500 to-orange-600', screen: 'applications', count: stats.apps },
+      { icon: DollarSign, title: 'پرداخت‌ها', color: 'from-red-500 to-red-600', screen: 'payments', count: payments.length },
+      { icon: BarChart3, title: 'گزارش‌ها', color: 'from-indigo-500 to-indigo-600', screen: 'reports', count: '📊' }
+    ];
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-lg">
+                  <Home className="text-white" size={24} />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-800">داشبورد مدیریت</h1>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-600">خوش آمدید: <span className="font-bold text-blue-600">{currentUser?.username}</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-xl shadow-lg p-6 border-r-4 border-blue-500">
+              <p className="text-gray-600 text-sm mb-1 text-right">اشخاص</p>
+              <p className="text-4xl font-bold text-blue-500 text-right">{stats.persons}</p>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 border-r-4 border-purple-500">
+              <p className="text-gray-600 text-sm mb-1 text-right">سازمان‌ها</p>
+              <p className="text-4xl font-bold text-purple-500 text-right">{stats.orgs}</p>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 border-r-4 border-green-500">
+              <p className="text-gray-600 text-sm mb-1 text-right">رویدادها</p>
+              <p className="text-4xl font-bold text-green-500 text-right">{stats.events}</p>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 border-r-4 border-orange-500">
+              <p className="text-gray-600 text-sm mb-1 text-right">درخواست‌ها</p>
+              <p className="text-4xl font-bold text-orange-500 text-right">{stats.apps}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {tiles.map((tile, index) => {
+              const Icon = tile.icon;
+              return (
+                <button key={index} onClick={() => setCurrentScreen(tile.screen)} className={`bg-gradient-to-br ${tile.color} text-white rounded-2xl shadow-xl p-6 hover:opacity-90 transition-all`}>
+                  <Icon className="mx-auto mb-3" size={48} />
+                  <h3 className="text-xl font-bold mb-2">{tile.title}</h3>
+                  <p className="text-3xl">{tile.count}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="text-center">
+            <button onClick={() => { setCurrentUser(null); setCurrentScreen('login'); notify('خارج شدید'); }} className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-xl inline-flex items-center gap-2">
+              <LogOut size={20} /> خروج
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== PERSONS LIST ====================
+  const PersonsList = () => {
+    const filtered = persons.filter((p) => {
+      if (!searchText) return true;
+      return (p.firstName || '').includes(searchText) || (p.lastName || '').includes(searchText) || (p.nationalCode || '').includes(searchText);
+    });
+
+    const remove = async (id) => {
+      if (!window.confirm('حذف شود؟')) return;
+      try {
+        await api.delete(`/persons/${id}`);
+        await loadAllData();
+        notify('حذف شد');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('dashboard')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">اشخاص ({persons.length})</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <div className="flex gap-3">
+              <button onClick={() => { setSelectedPerson(null); setCurrentScreen('person-form'); }} className="bg-blue-500 text-white px-6 py-3 rounded-lg flex items-center gap-2">
+                <Plus size={20} /> شخص جدید
+              </button>
+              <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="جستجو..." className="flex-1 px-4 py-3 border-2 rounded-lg text-right" />
+              <button onClick={() => setSearchText('')} className="bg-gray-500 text-white px-4 py-3 rounded-lg"><X size={20} /></button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-100">
+                <tr className="text-right">
+                  <th className="px-4 py-4">کد ملی</th>
+                  <th className="px-4 py-4">نام</th>
+                  <th className="px-4 py-4">جنسیت</th>
+                  <th className="px-4 py-4">موبایل</th>
+                  <th className="px-4 py-4">شهر</th>
+                  <th className="px-4 py-4">عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-500">{persons.length === 0 ? 'شخصی ثبت نشده' : 'نتیجه‌ای یافت نشد'}</td></tr>
+                ) : (
+                  filtered.map((p) => (
+                    <tr key={p.id} className="border-t hover:bg-blue-50">
+                      <td className="px-4 py-4 text-right">{p.nationalCode}</td>
+                      <td className="px-4 py-4 text-right font-semibold">{p.firstName} {p.lastName}</td>
+                      <td className="px-4 py-4 text-right">{p.gender === 'M' ? 'مرد' : p.gender === 'F' ? 'زن' : '-'}</td>
+                      <td className="px-4 py-4 text-right">{p.mobile || '-'}</td>
+                      <td className="px-4 py-4 text-right">{p.city || '-'}</td>
+                      <td className="px-4 py-4">
+                        <button onClick={() => { setSelectedPerson(p); setCurrentScreen('person-form'); }} className="text-blue-500 p-2"><Edit size={18} /></button>
+                        <button onClick={() => remove(p.id)} className="text-red-500 p-2"><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== PERSON FORM ====================
+  const PersonForm = () => {
+    const [form, setForm] = useState(selectedPerson || {
+      nationalCode: '', firstName: '', lastName: '', gender: '', birthDate: '', mobile: '', email: '', city: '', country: 'ایران', education: '', job: '', notes: ''
+    });
+
+    const submit = async () => {
+      if (!form.firstName || !form.lastName) {
+        notify('نام و نام خانوادگی الزامی است', 'error');
+        return;
+      }
+      try {
+        if (selectedPerson) {
+          await api.put(`/persons/${form.id}`, form);
+        } else {
+          await api.post('/persons', form);
+        }
+        await loadAllData();
+        notify('ذخیره شد');
+        setCurrentScreen('persons');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('persons')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">{selectedPerson ? 'ویرایش شخص' : 'شخص جدید'}</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 max-w-4xl pb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-right mb-2 font-semibold">کد ملی</label>
+                <input type="text" value={form.nationalCode} onChange={(e) => setForm({ ...form, nationalCode: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">نام *</label>
+                <input type="text" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">نام خانوادگی *</label>
+                <input type="text" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">جنسیت</label>
+                <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="">انتخاب</option>
+                  <option value="M">مرد</option>
+                  <option value="F">زن</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">تاریخ تولد</label>
+                <input type="text" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} placeholder="1370/01/01" className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">موبایل</label>
+                <input type="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">ایمیل</label>
+                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">شهر</label>
+                <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">تحصیلات</label>
+                <select value={form.education} onChange={(e) => setForm({ ...form, education: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="">انتخاب</option>
+                  <option value="دیپلم">دیپلم</option>
+                  <option value="کارشناسی">کارشناسی</option>
+                  <option value="کارشناسی ارشد">کارشناسی ارشد</option>
+                  <option value="دکتری">دکتری</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">شغل</label>
+                <input type="text" value={form.job} onChange={(e) => setForm({ ...form, job: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">یادداشت</label>
+                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" rows={3} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6 justify-end">
+              <button onClick={() => setCurrentScreen('persons')} className="bg-gray-500 text-white px-6 py-3 rounded-lg">انصراف</button>
+              <button onClick={submit} className="bg-blue-500 text-white px-6 py-3 rounded-lg flex items-center gap-2"><Save size={20} /> ذخیره</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== ORGANIZATIONS LIST ====================
+  const OrganizationsList = () => {
+    const filtered = organizations.filter((o) => {
+      if (!searchText) return true;
+      return (o.name || '').includes(searchText) || (o.city || '').includes(searchText);
+    });
+
+    const remove = async (id) => {
+      if (!window.confirm('حذف شود؟')) return;
+      try {
+        await api.delete(`/organizations/${id}`);
+        await loadAllData();
+        notify('حذف شد');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('dashboard')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">سازمان‌ها ({organizations.length})</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <div className="flex gap-3">
+              <button onClick={() => { setSelectedOrg(null); setCurrentScreen('org-form'); }} className="bg-purple-500 text-white px-6 py-3 rounded-lg flex items-center gap-2">
+                <Plus size={20} /> سازمان جدید
+              </button>
+              <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="جستجو..." className="flex-1 px-4 py-3 border-2 rounded-lg text-right" />
+              <button onClick={() => setSearchText('')} className="bg-gray-500 text-white px-4 py-3 rounded-lg"><X size={20} /></button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-100">
+                <tr className="text-right">
+                  <th className="px-4 py-4">نام سازمان</th>
+                  <th className="px-4 py-4">نوع</th>
+                  <th className="px-4 py-4">شهر</th>
+                  <th className="px-4 py-4">کشور</th>
+                  <th className="px-4 py-4">تماس</th>
+                  <th className="px-4 py-4">عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-500">{organizations.length === 0 ? 'سازمانی ثبت نشده' : 'نتیجه‌ای یافت نشد'}</td></tr>
+                ) : (
+                  filtered.map((o) => (
+                    <tr key={o.id} className="border-t hover:bg-purple-50">
+                      <td className="px-4 py-4 text-right font-semibold">{o.name}</td>
+                      <td className="px-4 py-4 text-right">{o.type || '-'}</td>
+                      <td className="px-4 py-4 text-right">{o.city || '-'}</td>
+                      <td className="px-4 py-4 text-right">{o.country || '-'}</td>
+                      <td className="px-4 py-4 text-right">{o.phone || '-'}</td>
+                      <td className="px-4 py-4">
+                        <button onClick={() => { setSelectedOrg(o); setCurrentScreen('org-form'); }} className="text-purple-500 p-2"><Edit size={18} /></button>
+                        <button onClick={() => remove(o.id)} className="text-red-500 p-2"><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== ORGANIZATION FORM ====================
+  const OrganizationForm = () => {
+    const [form, setForm] = useState(selectedOrg || {
+      name: '', type: '', nationalId: '', country: 'ایران', city: '', address: '', phone: '', website: '', notes: ''
+    });
+
+    const submit = async () => {
+      if (!form.name) {
+        notify('نام سازمان الزامی است', 'error');
+        return;
+      }
+      try {
+        if (selectedOrg) {
+          await api.put(`/organizations/${form.id}`, form);
+        } else {
+          await api.post('/organizations', form);
+        }
+        await loadAllData();
+        notify('ذخیره شد');
+        setCurrentScreen('organizations');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('organizations')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">{selectedOrg ? 'ویرایش سازمان' : 'سازمان جدید'}</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 max-w-4xl pb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">نام سازمان *</label>
+                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">نوع</label>
+                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="">انتخاب</option>
+                  <option value="دانشگاه">دانشگاه</option>
+                  <option value="مؤسسه">مؤسسه</option>
+                  <option value="NGO">NGO</option>
+                  <option value="شرکت">شرکت</option>
+                  <option value="دولتی">دولتی</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">شناسه ملی</label>
+                <input type="text" value={form.nationalId} onChange={(e) => setForm({ ...form, nationalId: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">کشور</label>
+                <input type="text" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">شهر</label>
+                <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">آدرس</label>
+                <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">تلفن</label>
+                <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">وب‌سایت</label>
+                <input type="url" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">یادداشت</label>
+                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" rows={3} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6 justify-end">
+              <button onClick={() => setCurrentScreen('organizations')} className="bg-gray-500 text-white px-6 py-3 rounded-lg">انصراف</button>
+              <button onClick={submit} className="bg-purple-500 text-white px-6 py-3 rounded-lg flex items-center gap-2"><Save size={20} /> ذخیره</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== EVENTS LIST ====================
+  const EventsList = () => {
+    const filtered = events.filter((e) => {
+      if (!searchText) return true;
+      return (e.title || '').includes(searchText) || (e.location || '').includes(searchText);
+    });
+
+    const remove = async (id) => {
+      if (!window.confirm('حذف شود؟')) return;
+      try {
+        await api.delete(`/events/${id}`);
+        await loadAllData();
+        notify('حذف شد');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('dashboard')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">رویدادها ({events.length})</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <div className="flex gap-3">
+              <button onClick={() => { setSelectedEvent(null); setCurrentScreen('event-form'); }} className="bg-green-500 text-white px-6 py-3 rounded-lg flex items-center gap-2">
+                <Plus size={20} /> رویداد جدید
+              </button>
+              <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="جستجو..." className="flex-1 px-4 py-3 border-2 rounded-lg text-right" />
+              <button onClick={() => setSearchText('')} className="bg-gray-500 text-white px-4 py-3 rounded-lg"><X size={20} /></button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-100">
+                <tr className="text-right">
+                  <th className="px-4 py-4">عنوان</th>
+                  <th className="px-4 py-4">نوع</th>
+                  <th className="px-4 py-4">برگزارکننده</th>
+                  <th className="px-4 py-4">تاریخ شروع</th>
+                  <th className="px-4 py-4">محل</th>
+                  <th className="px-4 py-4">عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-500">{events.length === 0 ? 'رویدادی ثبت نشده' : 'نتیجه‌ای یافت نشد'}</td></tr>
+                ) : (
+                  filtered.map((e) => (
+                    <tr key={e.id} className="border-t hover:bg-green-50">
+                      <td className="px-4 py-4 text-right font-semibold">{e.title}</td>
+                      <td className="px-4 py-4 text-right">{e.type || '-'}</td>
+                      <td className="px-4 py-4 text-right">{e.organizer || '-'}</td>
+                      <td className="px-4 py-4 text-right">{e.startDate || '-'}</td>
+                      <td className="px-4 py-4 text-right">{e.location || '-'}</td>
+                      <td className="px-4 py-4">
+                        <button onClick={() => { setSelectedEvent(e); setCurrentScreen('event-form'); }} className="text-green-500 p-2"><Edit size={18} /></button>
+                        <button onClick={() => remove(e.id)} className="text-red-500 p-2"><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== EVENT FORM ====================
+  const EventForm = () => {
+    const [form, setForm] = useState(selectedEvent || {
+      title: '', type: '', organizer: '', startDate: '', endDate: '', location: '', capacity: '', description: ''
+    });
+
+    const submit = async () => {
+      if (!form.title) {
+        notify('عنوان الزامی است', 'error');
+        return;
+      }
+      try {
+        if (selectedEvent) {
+          await api.put(`/events/${form.id}`, form);
+        } else {
+          await api.post('/events', form);
+        }
+        await loadAllData();
+        notify('ذخیره شد');
+        setCurrentScreen('events');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('events')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">{selectedEvent ? 'ویرایش رویداد' : 'رویداد جدید'}</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 max-w-4xl pb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">عنوان *</label>
+                <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">نوع</label>
+                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="">انتخاب</option>
+                  <option value="کارگاه">کارگاه</option>
+                  <option value="همایش">همایش</option>
+                  <option value="کنفرانس">کنفرانس</option>
+                  <option value="سمینار">سمینار</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">برگزارکننده</label>
+                <input type="text" value={form.organizer} onChange={(e) => setForm({ ...form, organizer: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">تاریخ شروع</label>
+                <input type="text" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} placeholder="1403/09/15" className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">تاریخ پایان</label>
+                <input type="text" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} placeholder="1403/09/20" className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">محل</label>
+                <input type="text" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">ظرفیت</label>
+                <input type="number" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">توضیحات</label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" rows={3} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6 justify-end">
+              <button onClick={() => setCurrentScreen('events')} className="bg-gray-500 text-white px-6 py-3 rounded-lg">انصراف</button>
+              <button onClick={submit} className="bg-green-500 text-white px-6 py-3 rounded-lg flex items-center gap-2"><Save size={20} /> ذخیره</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== APPLICATIONS LIST ====================
+  const ApplicationsList = () => {
+    const filtered = applications.filter((a) => {
+      if (filterStatus !== 'all' && a.status !== filterStatus) return false;
+      if (!searchText) return true;
+      return (a.applicantName || '').includes(searchText) || (a.requestType || '').includes(searchText);
+    });
+
+    const remove = async (id) => {
+      if (!window.confirm('حذف شود؟')) return;
+      try {
+        await api.delete(`/applications/${id}`);
+        await loadAllData();
+        notify('حذف شد');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('dashboard')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">درخواست‌ها ({applications.length})</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <div className="flex gap-3 mb-3">
+              <button onClick={() => { setSelectedApp(null); setCurrentScreen('app-form'); }} className="bg-orange-500 text-white px-6 py-3 rounded-lg flex items-center gap-2">
+                <Plus size={20} /> درخواست جدید
+              </button>
+              <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="جستجو..." className="flex-1 px-4 py-3 border-2 rounded-lg text-right" />
+            </div>
+            <div className="flex gap-3">
+              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-4 py-2 border-2 rounded-lg text-right">
+                <option value="all">همه وضعیت‌ها</option>
+                <option value="در انتظار">در انتظار</option>
+                <option value="پذیرفته">پذیرفته</option>
+                <option value="رد شده">رد شده</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-100">
+                <tr className="text-right">
+                  <th className="px-4 py-4">متقاضی</th>
+                  <th className="px-4 py-4">نوع</th>
+                  <th className="px-4 py-4">رشته</th>
+                  <th className="px-4 py-4">تاریخ</th>
+                  <th className="px-4 py-4">وضعیت</th>
+                  <th className="px-4 py-4">عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-500">{applications.length === 0 ? 'درخواستی ثبت نشده' : 'نتیجه‌ای یافت نشد'}</td></tr>
+                ) : (
+                  filtered.map((a) => (
+                    <tr key={a.id} className="border-t hover:bg-orange-50">
+                      <td className="px-4 py-4 text-right font-semibold">{a.applicantName}</td>
+                      <td className="px-4 py-4 text-right">{a.requestType}</td>
+                      <td className="px-4 py-4 text-right">{a.field}</td>
+                      <td className="px-4 py-4 text-right">{a.submitDate}</td>
+                      <td className="px-4 py-4 text-right">
+                        <span className={`px-3 py-1 rounded-full text-xs ${a.status === 'پذیرفته' ? 'bg-green-100 text-green-700' : a.status === 'رد شده' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          {a.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <button onClick={() => { setSelectedApp(a); setCurrentScreen('app-form'); }} className="text-orange-500 p-2"><Edit size={18} /></button>
+                        <button onClick={() => remove(a.id)} className="text-red-500 p-2"><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== APPLICATION FORM ====================
+  const ApplicationForm = () => {
+    const [form, setForm] = useState(selectedApp || {
+      applicantId: '', applicantName: '', requestType: '', field: '', submitDate: '', status: 'در انتظار', score: '', notes: ''
+    });
+
+    const submit = async () => {
+      if (!form.applicantName || !form.requestType) {
+        notify('متقاضی و نوع درخواست الزامی است', 'error');
+        return;
+      }
+      try {
+        if (selectedApp) {
+          await api.put(`/applications/${form.id}`, form);
+        } else {
+          await api.post('/applications', form);
+        }
+        await loadAllData();
+        notify('ذخیره شد');
+        setCurrentScreen('applications');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('applications')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">{selectedApp ? 'ویرایش درخواست' : 'درخواست جدید'}</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 max-w-4xl pb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-right mb-2 font-semibold">متقاضی *</label>
+                <select value={form.applicantId} onChange={(e) => {
+                  const person = persons.find(p => p.id === parseInt(e.target.value));
+                  setForm({ ...form, applicantId: e.target.value, applicantName: person ? `${person.firstName} ${person.lastName}` : '' });
+                }} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="">انتخاب</option>
+                  {persons.map(p => <option key={p.id} value={p.id}>{p.firstName} {p.lastName}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">نوع درخواست *</label>
+                <select value={form.requestType} onChange={(e) => setForm({ ...form, requestType: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="">انتخاب</option>
+                  <option value="فرصت مطالعاتی">فرصت مطالعاتی</option>
+                  <option value="بورسیه">بورسیه</option>
+                  <option value="جایزه">جایزه</option>
+                  <option value="حمایت">حمایت</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">رشته</label>
+                <input type="text" value={form.field} onChange={(e) => setForm({ ...form, field: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">تاریخ</label>
+                <input type="text" value={form.submitDate} onChange={(e) => setForm({ ...form, submitDate: e.target.value })} placeholder="1403/09/15" className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">وضعیت</label>
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="در انتظار">در انتظار</option>
+                  <option value="پذیرفته">پذیرفته</option>
+                  <option value="رد شده">رد شده</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">امتیاز</label>
+                <input type="number" value={form.score} onChange={(e) => setForm({ ...form, score: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">یادداشت</label>
+                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" rows={3} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6 justify-end">
+              <button onClick={() => setCurrentScreen('applications')} className="bg-gray-500 text-white px-6 py-3 rounded-lg">انصراف</button>
+              <button onClick={submit} className="bg-orange-500 text-white px-6 py-3 rounded-lg flex items-center gap-2"><Save size={20} /> ذخیره</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== PAYMENTS LIST ====================
+  const PaymentsList = () => {
+    const filtered = payments.filter((p) => {
+      if (!searchText) return true;
+      return (p.title || '').includes(searchText) || (p.paymentType || '').includes(searchText);
+    });
+
+    const remove = async (id) => {
+      if (!window.confirm('حذف شود؟')) return;
+      try {
+        await api.delete(`/payments/${id}`);
+        await loadAllData();
+        notify('حذف شد');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    const totalAmount = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('dashboard')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">پرداخت‌ها ({payments.length})</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <div className="flex gap-3 justify-between items-center">
+              <button onClick={() => { setSelectedPayment(null); setCurrentScreen('payment-form'); }} className="bg-red-500 text-white px-6 py-3 rounded-lg flex items-center gap-2">
+                <Plus size={20} /> پرداخت جدید
+              </button>
+              <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-lg">
+                <p className="text-sm">مجموع</p>
+                <p className="text-2xl font-bold">{totalAmount.toLocaleString('fa-IR')} تومان</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-100">
+                <tr className="text-right">
+                  <th className="px-4 py-4">عنوان</th>
+                  <th className="px-4 py-4">نوع</th>
+                  <th className="px-4 py-4">مبلغ</th>
+                  <th className="px-4 py-4">تاریخ</th>
+                  <th className="px-4 py-4">وضعیت</th>
+                  <th className="px-4 py-4">عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-500">{payments.length === 0 ? 'پرداختی ثبت نشده' : 'نتیجه‌ای یافت نشد'}</td></tr>
+                ) : (
+                  filtered.map((p) => (
+                    <tr key={p.id} className="border-t hover:bg-red-50">
+                      <td className="px-4 py-4 text-right font-semibold">{p.title}</td>
+                      <td className="px-4 py-4 text-right">{p.paymentType}</td>
+                      <td className="px-4 py-4 text-right font-bold text-red-600">{(parseFloat(p.amount) || 0).toLocaleString('fa-IR')}</td>
+                      <td className="px-4 py-4 text-right">{p.paymentDate}</td>
+                      <td className="px-4 py-4 text-right">
+                        <span className={`px-3 py-1 rounded-full text-xs ${p.status === 'پرداخت شده' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <button onClick={() => { setSelectedPayment(p); setCurrentScreen('payment-form'); }} className="text-red-500 p-2"><Edit size={18} /></button>
+                        <button onClick={() => remove(p.id)} className="text-red-500 p-2"><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== PAYMENT FORM ====================
+  const PaymentForm = () => {
+    const [form, setForm] = useState(selectedPayment || {
+      title: '', paymentCategory: '', paymentType: '', paymentDate: '', amount: '', method: '', status: 'برنامه‌ریزی شده', notes: ''
+    });
+
+    const submit = async () => {
+      if (!form.title || !form.amount) {
+        notify('عنوان و مبلغ الزامی است', 'error');
+        return;
+      }
+      try {
+        if (selectedPayment) {
+          await api.put(`/payments/${form.id}`, form);
+        } else {
+          await api.post('/payments', form);
+        }
+        await loadAllData();
+        notify('ذخیره شد');
+        setCurrentScreen('payments');
+      } catch { notify('خطا', 'error'); }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('payments')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">{selectedPayment ? 'ویرایش پرداخت' : 'پرداخت جدید'}</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 max-w-4xl pb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">عنوان *</label>
+                <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">نوع پرداخت</label>
+                <select value={form.paymentType} onChange={(e) => setForm({ ...form, paymentType: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="">انتخاب</option>
+                  <option value="حق‌التدریس">حق‌التدریس</option>
+                  <option value="کمک هزینه">کمک هزینه</option>
+                  <option value="جایزه">جایزه</option>
+                  <option value="هزینه سفر">هزینه سفر</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">تاریخ</label>
+                <input type="text" value={form.paymentDate} onChange={(e) => setForm({ ...form, paymentDate: e.target.value })} placeholder="1403/09/15" className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">مبلغ (تومان) *</label>
+                <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" />
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">روش پرداخت</label>
+                <select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="">انتخاب</option>
+                  <option value="نقد">نقد</option>
+                  <option value="کارت به کارت">کارت به کارت</option>
+                  <option value="حواله">حواله</option>
+                  <option value="چک">چک</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-right mb-2 font-semibold">وضعیت</label>
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right">
+                  <option value="برنامه‌ریزی شده">برنامه‌ریزی شده</option>
+                  <option value="پرداخت شده">پرداخت شده</option>
+                  <option value="لغو شده">لغو شده</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-right mb-2 font-semibold">یادداشت</label>
+                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-4 py-3 border-2 rounded-lg text-right" rows={3} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6 justify-end">
+              <button onClick={() => setCurrentScreen('payments')} className="bg-gray-500 text-white px-6 py-3 rounded-lg">انصراف</button>
+              <button onClick={submit} className="bg-red-500 text-white px-6 py-3 rounded-lg flex items-center gap-2"><Save size={20} /> ذخیره</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== REPORTS ====================
+  const Reports = () => {
+    const stats = {
+      persons: persons.length,
+      orgs: organizations.length,
+      events: events.length,
+      apps: applications.length,
+      payments: payments.length,
+      totalAmount: payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
+      pending: applications.filter(a => a.status === 'در انتظار').length,
+      accepted: applications.filter(a => a.status === 'پذیرفته').length
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Notif />
+        <div className="bg-white shadow-md border-b mb-6">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <button onClick={() => setCurrentScreen('dashboard')} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+              <ChevronLeft size={20} /> بازگشت
+            </button>
+            <h1 className="text-2xl font-bold">گزارش‌ها و آمار</h1>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+              <Users size={40} className="mb-3" />
+              <p className="text-sm mb-1">کل اشخاص</p>
+              <p className="text-4xl font-bold">{stats.persons}</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+              <Building2 size={40} className="mb-3" />
+              <p className="text-sm mb-1">سازمان‌ها</p>
+              <p className="text-4xl font-bold">{stats.orgs}</p>
+            </div>
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+              <Calendar size={40} className="mb-3" />
+              <p className="text-sm mb-1">رویدادها</p>
+              <p className="text-4xl font-bold">{stats.events}</p>
+            </div>
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+              <FileText size={40} className="mb-3" />
+              <p className="text-sm mb-1">کل درخواست‌ها</p>
+              <p className="text-4xl font-bold">{stats.apps}</p>
+            </div>
+            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl shadow-lg p-6 text-white">
+              <AlertCircle size={40} className="mb-3" />
+              <p className="text-sm mb-1">در انتظار بررسی</p>
+              <p className="text-4xl font-bold">{stats.pending}</p>
+            </div>
+            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+              <DollarSign size={40} className="mb-3" />
+              <p className="text-sm mb-1">مجموع پرداخت‌ها</p>
+              <p className="text-2xl font-bold">{stats.totalAmount.toLocaleString('fa-IR')} تومان</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4 text-right">خلاصه سیستم</h3>
+            <div className="space-y-2 text-right">
+              <p className="text-gray-700">✅ سیستم کامل با 6 بخش اصلی</p>
+              <p className="text-gray-700">✅ {stats.persons + stats.orgs + stats.events + stats.apps + stats.payments} رکورد کل</p>
+              <p className="text-gray-700">✅ {stats.accepted} درخواست پذیرفته شده</p>
+              <p className="text-gray-700">✅ ذخیره‌سازی دائمی داده‌ها</p>
+              <p className="text-gray-700">✅ آماده تحویل به کارفرما</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const screens = {
+    login: <Login />,
+    dashboard: <Dashboard />,
+    persons: <PersonsList />,
+    'person-form': <PersonForm />,
+    organizations: <OrganizationsList />,
+    'org-form': <OrganizationForm />,
+    events: <EventsList />,
+    'event-form': <EventForm />,
+    applications: <ApplicationsList />,
+    'app-form': <ApplicationForm />,
+    payments: <PaymentsList />,
+    'payment-form': <PaymentForm />,
+    reports: <Reports />
+  };
+
+  return screens[currentScreen] || <Login />;
+};
+
+export default HaameeFinal;
