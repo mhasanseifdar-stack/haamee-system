@@ -1,18 +1,6 @@
 {
-  "app": "panel-haamee",
   "port": 3000,
-  "platform": "node",
-  "build": {
-    "location": "iran"
-  },
-  "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "start": "cd backend && npm install && node server.js"
-  },
-  "disks": [
-    {
-      "name": "uploads",
-      "mountTo": "backend/uploads"
-    }
-  ]
+  "node": {
+    "version": "18"
+  }
 }

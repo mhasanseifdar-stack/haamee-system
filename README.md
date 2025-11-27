@@ -1,45 +1,24 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # 🚀 سامانه Haamee - آماده تحویل
+=======
+ Haamee
+>>>>>>> 0e55ed7b54463fe632a498fb74396148aede6627
 
-## ⚡ شروع سریع (5 دقیقه)
 
-### 1️⃣ نصب Backend
-
-```bash
-cd haamee-backend
-npm install
-npm start
-```
-
-### 2️⃣ نصب Frontend (ترمینال جدید)
-
-```bash
-cd haamee-frontend
-npm install
-npm start
-```
-
-### 3️⃣ ورود
-
-مرورگر خودکار باز می‌شود: http://localhost:3000
-
-- **نام کاربری:** admin
-- **رمز عبور:** 123456
-
----
-
-## 📦 فایل‌های پروژه
+ فایل‌های پروژه
 
 ```
-✅ haamee-backend/
-   ├── server.js (سرور کامل با API)
+ haamee-backend/
+   ├── server.js 
    ├── package.json
-   └── haamee.db (خودکار ساخته می‌شود)
+   └── haamee.db 
 
-✅ haamee-frontend/
-   ├── src/App.js (React App کامل)
+ haamee-frontend/
+   ├── src/App.js 
    └── package.json
 
+<<<<<<< HEAD
 ✅ DEPLOY_GUIDE.md (راهنمای استقرار آنلاین)
 ```
 
@@ -82,3 +61,6 @@ npm start
 # haamee-system
 Dashboard
 >>>>>>> a7c9fffab5b4d24b5cecef89eca7355334ec9ab3
+=======
+ DEPLOY_GUIDE.md 
+>>>>>>> 0e55ed7b54463fe632a498fb74396148aede6627
