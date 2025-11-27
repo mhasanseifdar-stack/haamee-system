@@ -6,16 +6,13 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Create uploads directory
 const uploadsDir = './uploads';
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
-
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
@@ -623,11 +620,6 @@ app.delete('/api/payments/:id', (req, res) => {
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Haamee Server Running' });
-});
-
-// Catch-all route to serve React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
 // Start Server

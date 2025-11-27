@@ -22,7 +22,7 @@ import {
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // API Configuration
-const API_URL = '/api';
+const API_URL = 'http://localhost:3001/api';
 
 const HaameeFinal = () => {
   const [currentScreen, setCurrentScreen] = useState('login');
